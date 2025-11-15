@@ -49,3 +49,16 @@ Thumbs.db
 # Project specific
 /venv
 *.sqlite3
+
+# Docker (keep locally, don't push)
+Dockerfile
+docker-compose.yml
+.dockerignore
+.env.example
+entrypoint.sh
+build-docker.bat
+start-docker.bat
+stop-docker.bat
+push-docker.bat
+build.sh
+DOCKER_GUIDE.md
