@@ -5,4 +5,4 @@ python-decouple==3.8
 
 python -m venv venv
 venv\Scripts\activate
-python manage.py runserver
+python manage.py runserver  (no need to delete)
