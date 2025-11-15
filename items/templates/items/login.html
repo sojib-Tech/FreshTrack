@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - FreshTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h1>Sign In to FreshTrack</h1>
+        <p class="form-subtitle">Track your food and reduce waste</p>
+
+        <form method="post" class="form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_username">Username:</label>
+                <input type="text" id="id_username" name="username" class="form-control" 
+                       placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_password">Password:</label>
+                <input type="password" id="id_password" name="password" class="form-control" 
+                       placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+
+        <p class="form-footer">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    </div>
+</div>
+{% endblock %}

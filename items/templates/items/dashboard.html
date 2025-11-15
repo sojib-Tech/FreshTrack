@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - FreshTrack{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome, {{ user.first_name|default:user.username }}!</h1>
+        <p>Manage your food items and track expiry dates</p>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="stats-grid">
+        <div class="stat-card stat-safe">
+            <div class="stat-value">{{ safe_count }}</div>
+            <div class="stat-label">Safe Items</div>
+        </div>
+        <div class="stat-card stat-soon">
+            <div class="stat-value">{{ soon_count }}</div>
+            <div class="stat-label">Expiring Soon</div>
+        </div>
+        <div class="stat-card stat-expired">
+            <div class="stat-value">{{ expired_count }}</div>
+            <div class="stat-label">Expired</div>
+        </div>
+        <div class="stat-card stat-total">
+            <div class="stat-value">{{ items|length }}</div>
+            <div class="stat-label">Total Items</div>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    {% if alerts %}
+    <div class="alerts-section">
+        <h2>🔔 Smart Alerts</h2>
+        <div class="alerts-grid">
+            {% for item in alerts %}
+            <div class="alert-box alert-{{ item.get_status }}">
+                <div class="alert-icon">🔔</div>
+                <div class="alert-content">
+                    <p class="alert-message">{{ item.get_alert_message }}</p>
+                    <p class="alert-item">{{ item.item_name }} ({{ item.get_category_display }})</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Add Item Form Section -->
+    <section class="add-item-section">
+        <h2>Add New Item</h2>
+        <form method="post" class="form">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group form-col-2">
+                    <label for="id_item_name">Item Name:</label>
+                    {{ form.item_name }}
+                    {% if form.item_name.errors %}
+                        <div class="form-error">{{ form.item_name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group form-col-1">
+                    <label for="id_category">Category:</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <div class="form-error">{{ form.category.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col-1">
+                    <label for="id_expiry_date">Expiry Date:</label>
+                    {{ form.expiry_date }}
+                    {% if form.expiry_date.errors %}
+                        <div class="form-error">{{ form.expiry_date.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group form-col-1">
+                    <label for="id_quantity">Quantity:</label>
+                    {{ form.quantity }}
+                    {% if form.quantity.errors %}
+                        <div class="form-error">{{ form.quantity.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_notes">Notes (optional):</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <div class="form-error">{{ form.notes.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col-2">
+                    <label for="id_alert_enabled">
+                        {{ form.alert_enabled }} Enable Smart Alerts
+                    </label>
+                </div>
+
+                <div class="form-group form-col-1">
+                    <label for="id_alert_days_before">Alert Before (days):</label>
+                    {{ form.alert_days_before }}
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="form-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary">Add Item</button>
+        </form>
+    </section>
+
+    <!-- Items List Section -->
+    <section class="items-section">
+        <h2>Your Items</h2>
+
+        <!-- Search and Filter -->
+        <div class="search-filter">
+            <form method="get" class="search-form">
+                <input type="text" name="q" placeholder="Search items..." value="{{ query }}" 
+                       class="form-control search-input">
+                <select name="status" class="form-control filter-select">
+                    <option value="">All Status</option>
+                    <option value="safe" {% if status_filter == 'safe' %}selected{% endif %}>Safe</option>
+                    <option value="soon" {% if status_filter == 'soon' %}selected{% endif %}>Expiring Soon</option>
+                    <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                </select>
+                <button type="submit" class="btn btn-secondary">Filter</button>
+                {% if query or status_filter %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-light">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Items Table -->
+        {% if items %}
+            <div class="table-responsive">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Expiry Date</th>
+                            <th>Days Left</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="{{ item.get_status_color }}">
+                            <td>{{ item.item_name }}</td>
+                            <td><span class="badge badge-{{ item.category }}">{{ item.get_category_display }}</span></td>
+                            <td>{{ item.expiry_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if item.days_left == 0 %}
+                                    <strong>Today</strong>
+                                {% elif item.days_left == 1 %}
+                                    <strong>1 day</strong>
+                                {% elif item.days_left < 0 %}
+                                    <strong>{{ item.days_left|add:0 }} days ago</strong>
+                                {% else %}
+                                    <strong>{{ item.days_left }} days</strong>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.quantity }}</td>
+                            <td>
+                                {% if item.get_status == 'expired' %}
+                                    <span class="status-badge status-expired">Expired</span>
+                                {% elif item.get_status == 'soon' %}
+                                    <span class="status-badge status-soon">Expiring Soon</span>
+                                {% else %}
+                                    <span class="status-badge status-safe">Safe</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions">
+                                <a href="{% url 'edit_item' item.id %}" class="btn btn-small btn-edit">Edit</a>
+                                <a href="{% url 'delete_item' item.id %}" class="btn btn-small btn-delete">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No items added yet. 🥗</p>
+                <p class="empty-hint">Start by adding your first item above!</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
