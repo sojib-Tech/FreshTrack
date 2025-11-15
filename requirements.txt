@@ -1,8 +1,6 @@
-Django==4.2.7
+Django==5.2.8
 Pillow==10.1.0
 python-decouple==3.8
-
-
-python -m venv venv
-venv\Scripts\activate
-python manage.py runserver  (no need to delete)
+gunicorn==21.2.0
+whitenoise==6.6.0
+psycopg2-binary==2.9.9

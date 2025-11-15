@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - FreshTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero">
+        <h1>Welcome to FreshTrack</h1>
+        <p>Never waste food again! Track your food expiry dates and reduce waste.</p>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Easy Tracking</h3>
+                <p>Add items and automatically track their expiry dates</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>Smart Alerts</h3>
+                <p>Get notified when items are about to expire</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Save Money</h3>
+                <p>Reduce food waste and save on grocery bills</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">♻️</div>
+                <h3>Eco-Friendly</h3>
+                <p>Help protect the environment by reducing waste</p>
+            </div>
+        </div>
+
+        {% if not user.is_authenticated %}
+        <div class="cta-buttons">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="{% url 'login' %}" class="btn btn-secondary btn-lg">Sign In</a>
+        </div>
+        {% else %}
+        <div class="cta-buttons">
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="info-section">
+        <h2>How It Works</h2>
+        <ol class="steps">
+            <li><strong>Register:</strong> Create your free FreshTrack account</li>
+            <li><strong>Add Items:</strong> Enter food items and their expiry dates</li>
+            <li><strong>Track:</strong> View your items with color-coded expiry status</li>
+            <li><strong>Manage:</strong> Delete items or update as needed</li>
+        </ol>
+    </section>
+</div>
+{% endblock %}
