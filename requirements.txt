@@ -1,0 +1,8 @@
+Django==4.2.7
+Pillow==10.1.0
+python-decouple==3.8
+
+
+python -m venv venv
+venv\Scripts\activate
+python manage.py runserver
