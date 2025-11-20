@@ -57,7 +57,7 @@ class Item(models.Model):
             return 'status-safe'
 
     def should_alert(self):
-        """Check if alert should be shown"""
+        """Check if alert should be shown - only for items not yet expired"""
         if not self.alert_enabled:
             return False
         days = self.days_left()
@@ -72,3 +72,26 @@ class Item(models.Model):
             return f"{self.item_name} expires TODAY!"
         else:
             return f"{self.item_name} expires in {days} day(s)!"
+
+    def get_countdown(self):
+        """Get detailed countdown showing hours and days left"""
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        today = now.date()
+        
+        # Calculate time difference
+        if self.expiry_date == today:
+            return "Expires today"
+        elif self.expiry_date < today:
+            days_expired = abs((self.expiry_date - today).days)
+            return f"Expired {days_expired}d ago"
+        else:
+            days_left = (self.expiry_date - today).days
+            hours_left = 24 - now.hour if now.hour > 0 else 24
+            
+            if days_left == 0:
+                return f"Today - {hours_left}h left"
+            elif days_left == 1:
+                return f"1d {hours_left}h left"
+            else:
+                return f"{days_left}d left"

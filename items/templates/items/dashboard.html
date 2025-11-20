@@ -40,6 +40,7 @@
                 <div class="alert-content">
                     <p class="alert-message">{{ item.get_alert_message }}</p>
                     <p class="alert-item">{{ item.item_name }} ({{ item.get_category_display }})</p>
+                    <p class="alert-countdown" data-expiry-date="{{ item.expiry_date|date:'Y-m-d' }}">⏱️ {{ item.get_countdown }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -199,4 +200,35 @@
         {% endif %}
     </section>
 </div>
+
+<script>
+function updateCountdowns() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    document.querySelectorAll('.alert-countdown').forEach(element => {
+        const expiryDateStr = element.dataset.expiryDate;
+        const expiryDate = new Date(expiryDateStr + 'T23:59:59');
+        
+        const timeDiff = expiryDate - now;
+        
+        if (timeDiff < 0) {
+            const secondsExpired = Math.abs(Math.floor(timeDiff / 1000));
+            const daysExpired = Math.floor(secondsExpired / 86400);
+            element.textContent = `⏱️ Expired ${daysExpired}d ago`;
+        } else {
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            
+            element.textContent = `⏱️ ${days}d:${String(hours).padStart(2, '0')}h:${String(minutes).padStart(2, '0')}m:${String(seconds).padStart(2, '0')}s`;
+        }
+    });
+}
+
+updateCountdowns();
+setInterval(updateCountdowns, 1000);
+</script>
+
 {% endblock %}

@@ -98,7 +98,7 @@ def dashboard(request):
     soon_count = sum(1 for item in all_items if item.get_status() == 'soon')
     safe_count = sum(1 for item in all_items if item.get_status() == 'safe')
     
-    alerts = [item for item in all_items if item.should_alert()]
+    alerts = [item for item in Item.objects.all() if item.should_alert()]
     
     context = {
         'form': form,
