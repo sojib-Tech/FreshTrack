@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - FreshTrack{% endblock %}
+
+{% block content %}
+<h1>⚙️ Admin Dashboard</h1>
+
+<div class="stats">
+    <div class="stat-box">
+        <div class="stat-value">{{ pending_users.count }}</div>
+        <div class="stat-label">Pending Users</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ pending_products.count }}</div>
+        <div class="stat-label">Pending Products</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ approved_products.count }}</div>
+        <div class="stat-label">Approved</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ rejected_products.count }}</div>
+        <div class="stat-label">Rejected</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ expired_products.count }}</div>
+        <div class="stat-label">Expired</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-value">{{ sellers.count }}</div>
+        <div class="stat-label">Total Sellers</div>
+    </div>
+</div>
+
+<h2>👥 Pending User Approvals ({{ pending_users.count }})</h2>
+{% if pending_users %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Registered</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user_role in pending_users %}
+        <tr>
+            <td>{{ user_role.user.username }}</td>
+            <td>{{ user_role.user.email }}</td>
+            <td>
+                <span class="status-badge status-{{ user_role.role }}">
+                    {{ user_role.get_role_display }}
+                </span>
+            </td>
+            <td>{{ user_role.user.date_joined|date:"M d, Y" }}</td>
+            <td>
+                <a href="{% url 'approve_user' user_role.user.id %}" class="btn btn-success"
+                    style="padding: 5px 10px; font-size: 12px;">✓ Approve</a>
+                <a href="{% url 'reject_user' user_role.user.id %}" class="btn btn-danger"
+                    style="padding: 5px 10px; font-size: 12px;">✗ Reject</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No pending user approvals.</p>
+</div>
+{% endif %}
+
+<h2>⏳ Pending Products ({{ pending_products.count }})</h2>
+{% if pending_products %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Seller</th>
+            <th>Price</th>
+            <th>Expiry Hours</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in pending_products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.seller.company_name }}</td>
+            <td>${{ product.price }}</td>
+            <td><span class="hours-left"><span data-expiry="{{ product.expiry_datetime.timestamp|floatformat:0 }}000">{{
+                        product.countdown_timer }}</span></span></td>
+            <td>
+                <a href="{% url 'approve_product' product.id %}" class="btn btn-success"
+                    style="padding: 5px 10px; font-size: 12px;">✓ Approve</a>
+                <a href="{% url 'reject_product' product.id %}" class="btn btn-danger"
+                    style="padding: 5px 10px; font-size: 12px;">✗ Reject</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No pending products.</p>
+</div>
+{% endif %}
+
+<h2 style="margin-top: 40px;">✅ Approved Products ({{ approved_products.count }})</h2>
+{% if approved_products %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Seller</th>
+            <th>Price</th>
+            <th>Hours Left</th>
+            <th>Alert Level</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in approved_products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.seller.company_name }}</td>
+            <td>${{ product.price }}</td>
+            <td><span class="hours-left"><span data-expiry="{{ product.expiry_datetime.timestamp|floatformat:0 }}000">{{
+                        product.countdown_timer }}</span></span></td>
+            <td>
+                <span class="alert-badge alert-{{ product.alert_level }}">
+                    {% if product.alert_level == 'expired' %}
+                    Expired
+                    {% elif product.alert_level == 'last_chance' %}
+                    Last Chance
+                    {% elif product.alert_level == 'urgent' %}
+                    Urgent
+                    {% elif product.alert_level == 'soon' %}
+                    Soon
+                    {% elif product.alert_level == 'warning' %}
+                    Warning
+                    {% else %}
+                    Fresh
+                    {% endif %}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No approved products.</p>
+</div>
+{% endif %}
+
+<h2 style="margin-top: 40px;">❌ Rejected Products ({{ rejected_products.count }})</h2>
+{% if rejected_products %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Seller</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in rejected_products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.seller.company_name }}</td>
+            <td>${{ product.price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No rejected products.</p>
+</div>
+{% endif %}
+
+<h2 style="margin-top: 40px;">🌍 Top Sellers ({{ sellers.count }})</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Company</th>
+            <th>Username</th>
+            <th>Rating</th>
+            <th>Total Sales</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for seller in sellers %}
+        <tr>
+            <td>{{ seller.company_name }}</td>
+            <td>{{ seller.user.username }}</td>
+            <td>{{ seller.rating }}</td>
+            <td>${{ seller.total_sales }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" style="text-align: center;">No sellers yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

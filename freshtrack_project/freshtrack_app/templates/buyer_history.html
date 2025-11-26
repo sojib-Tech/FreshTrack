@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Purchase History - FreshTrack{% endblock %}
+
+{% block content %}
+<h1>📋 Your Purchase History</h1>
+
+<a href="{% url 'buyer_dashboard' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← Back to Products</a>
+
+{% if purchases %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Seller</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Purchased</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for purchase in purchases %}
+        <tr>
+            <td>{{ purchase.product_name }}</td>
+            <td>{{ purchase.seller_name }}</td>
+            <td>${{ purchase.price }}</td>
+            <td>{{ purchase.quantity }}</td>
+            <td><strong>${{ purchase.total_price }}</strong></td>
+            <td>{{ purchase.purchased_at|date:"M d, Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p style="text-align: center; color: #7f8c8d;">No purchase history yet. <a href="{% url 'buyer_dashboard' %}">Browse
+            products</a></p>
+</div>
+{% endif %}
+{% endblock %}

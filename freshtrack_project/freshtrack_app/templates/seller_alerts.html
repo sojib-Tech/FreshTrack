@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Alerts - FreshTrack{% endblock %}
+
+{% block content %}
+<h1>🔔 Your Expiry Alerts</h1>
+
+<a href="{% url 'seller_dashboard' %}" class="btn btn-secondary" style="margin-bottom: 20px;">← Back to Dashboard</a>
+
+{% if alerts %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Alert Level</th>
+            <th>Message</th>
+            <th>Hours Left</th>
+            <th>Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alert in alerts %}
+        <tr>
+            <td>{{ alert.product.name }}</td>
+            <td>
+                <span class="alert-badge alert-{{ alert.alert_level }}">
+                    {{ alert.get_alert_level_display|default:alert.alert_level }}
+                </span>
+            </td>
+            <td>{{ alert.message }}</td>
+            <td><span data-expiry="{{ alert.product.expiry_datetime.timestamp|floatformat:0 }}000">{{
+                    alert.product.countdown_timer }}</span></td>
+            <td>{{ alert.created_at|date:"M d, Y H:i" }}</td>
+            <td>
+                {% if not alert.is_read %}
+                <a href="{% url 'mark_alert_read' alert.id %}" class="btn btn-success"
+                    style="padding: 5px 10px; font-size: 12px;">Mark Read</a>
+                {% else %}
+                <span style="color: #7f8c8d;">Read</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p style="text-align: center; color: #7f8c8d;">No alerts at the moment. All your products are fresh! 🎉</p>
+</div>
+{% endif %}
+{% endblock %}

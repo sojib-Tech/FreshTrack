@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - FreshTrack{% endblock %}
+
+{% block content %}
+<h1>🛒 Browse Fresh Products</h1>
+
+<div style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <a href="{% url 'buyer_dashboard' %}" class="btn">All Products</a>
+    <a href="?alert=urgent" class="btn btn-danger">Urgent Deals</a>
+    <a href="?alert=soon" class="btn btn-warning">Expiring Soon</a>
+</div>
+
+<div class="product-grid">
+    {% for product in products %}
+    <div class="product-card">
+        <div class="product-header">
+            <div class="product-name">{{ product.name }}</div>
+            <div class="product-price">${{ product.price }}</div>
+        </div>
+        <div class="product-info">
+            <div class="info-row">
+                <span class="label">Seller:</span>
+                <span class="value">{{ product.seller.company_name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Available:</span>
+                <span class="value">{{ product.quantity }} units</span>
+            </div>
+            <div class="hours-left">⏱️ <span data-expiry="{{ product.expiry_datetime.timestamp|floatformat:0 }}000">{{
+                    product.countdown_timer }}</span></div>
+            <span class="alert-badge alert-{{ product.alert_level }}">
+                {% if product.alert_level == 'expired' %}
+                Expired
+                {% elif product.alert_level == 'last_chance' %}
+                Last Chance
+                {% elif product.alert_level == 'urgent' %}
+                Urgent Alert
+                {% elif product.alert_level == 'soon' %}
+                Expiring Soon
+                {% elif product.alert_level == 'warning' %}
+                Early Warning
+                {% else %}
+                Fresh
+                {% endif %}
+            </span>
+        </div>
+        <div class="product-footer">
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-success">View & Review</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; background: white; padding: 40px; border-radius: 8px;">
+        <p>No products available right now.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

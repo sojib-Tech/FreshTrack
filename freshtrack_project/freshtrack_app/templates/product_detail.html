@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - FreshTrack{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>{{ product.name }}</h1>
+
+    <div class="form-row">
+        <div>
+            <div style="margin: 20px 0;">
+                <div class="info-row">
+                    <span class="label">Price:</span>
+                    <span class="value" style="font-size: 24px; color: #27ae60; font-weight: bold;">${{ product.price
+                        }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Seller:</span>
+                    <span class="value">{{ product.seller.company_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Available Stock:</span>
+                    <span class="value">{{ product.quantity }} units</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Manufacturing Date:</span>
+                    <span class="value">{{ product.manufacturing_date|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Expiry Date:</span>
+                    <span class="value">{{ product.expiry_datetime|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Hours Remaining:</span>
+                    <span class="value hours-left">⏱️ <span
+                            data-expiry="{{ product.expiry_datetime.timestamp|floatformat:0 }}000">{{
+                            product.countdown_timer }}</span></span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="alert-badge alert-{{ product.alert_level }}">
+                        {% if product.alert_level == 'expired' %}
+                        Expired
+                        {% elif product.alert_level == 'last_chance' %}
+                        Last Chance
+                        {% elif product.alert_level == 'urgent' %}
+                        Urgent Alert
+                        {% elif product.alert_level == 'soon' %}
+                        Expiring Soon
+                        {% elif product.alert_level == 'warning' %}
+                        Early Warning
+                        {% else %}
+                        Fresh
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated and user.role.role == 'buyer' %}
+<div class="card">
+    <h2>🛒 Purchase This Product</h2>
+    <form method="post" action="{% url 'buy_product' product.id %}" style="max-width: 400px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" min="1" max="{{ product.quantity }}" value="1"
+                class="form-control" required>
+            <small style="color: #7f8c8d;">Available: {{ product.quantity }} units</small>
+        </div>
+
+        <div class="form-group">
+            <p><strong>Total Price:</strong> <span id="total-price">${{ product.price }}</span></p>
+        </div>
+
+        <button type="submit" class="btn btn-success" style="width: 100%;">✓ Buy Now</button>
+    </form>
+
+    <script>
+        var pricePerUnit = parseFloat('{{ product.price }}');
+        var quantityInput = document.getElementById('quantity');
+        var totalPriceSpan = document.getElementById('total-price');
+
+        quantityInput.addEventListener('change', function () {
+            var total = (pricePerUnit * this.value).toFixed(2);
+            totalPriceSpan.textContent = '$' + total;
+        });
+    </script>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Reviews ({{ reviews.count }})</h2>
+    <div class="info-row">
+        <span class="label">Average Rating:</span>
+        <span class="review-rating">★ {{ avg_rating }}/5</span>
+    </div>
+
+    {% if user.is_authenticated %}
+    <hr style="margin: 20px 0;">
+    <h3>Leave a Review</h3>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Rating</label>
+            <div class="radio-group">
+                {% for value, label in form.rating.field.choices %}
+                <label>
+                    <input type="radio" name="rating" value="{{ value }}" required> {{ label }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="comment">Comment</label>
+            <textarea id="comment" name="comment" class="form-control" rows="4"
+                placeholder="Share your experience..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Post Review</button>
+    </form>
+    {% else %}
+    <p><a href="{% url 'login' %}">Login</a> to leave a review</p>
+    {% endif %}
+
+    <hr style="margin: 20px 0;">
+
+    {% for review in reviews %}
+    <div class="review-section">
+        <div class="review-header">
+            <div>
+                <div class="review-author">{{ review.buyer.username }}</div>
+                <div class="review-rating">★ {{ review.rating }}/5</div>
+            </div>
+            <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+        </div>
+        <div class="review-comment">{{ review.comment }}</div>
+    </div>
+    {% empty %}
+    <p style="text-align: center; color: #7f8c8d;">No reviews yet. Be the first to review!</p>
+    {% endfor %}
+</div>
+
+<a href="{% url 'buyer_dashboard' %}" class="btn btn-secondary" style="margin-top: 20px;">Back to Products</a>
+{% endblock %}
